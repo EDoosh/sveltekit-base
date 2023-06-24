@@ -1,0 +1,21 @@
+{
+	"extends": "./tsconfig.json",
+	"include": [
+		"./.svelte-kit/ambient.d.ts",
+		"./.svelte-kit/types/**/$types.d.ts",
+		"./src/**/*.ts",
+		"./src/**/*.svelte",
+		"./tests/**/*.ts",
+		"./.eslintrc.cjs",
+		"./.prettierrc.cjs",
+		"./playwright.config.ts",
+		"./postcss.config.js",
+		"./svelte.config.js",
+		"./tailwind.config.js",
+		"./vite.config.ts"
+	]
+	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
+	//
+	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
+	// from the referenced tsconfig.json - TypeScript does not merge them in
+}
