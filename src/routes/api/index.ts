@@ -1,5 +1,22 @@
 import { error } from '@sveltejs/kit';
 
+export type ApiResponse<T, E extends [string, unknown][] = [[string, never]]> =
+	| ApiSuccess<T>
+	| ApiError<E>;
+export interface ApiSuccess<T> {
+	error: false;
+	data: T;
+}
+export type ApiError<E extends (string | [string, unknown])[]> = {
+	error: true;
+} & {
+	[K in keyof E]: E[K] extends string
+		? { code: E[K]; data: never }
+		: { code: E[K][0]; data: E[K][1] };
+}[number];
+
+export type ErrorMap<E extends Record<string, unknown>> = E;
+
 export const HttpCode100 = {
 	Continue: 100,
 	SwitchingProtocols: 101,
@@ -113,14 +130,11 @@ export function err(httpCode: Error, code: string, data: unknown): never;
 export function err(code_httpCode: string | Error, data_code?: unknown | string, data?: unknown) {
 	if (typeof code_httpCode === 'string') return err(HttpCode.BadRequest, code_httpCode, data_code);
 
-	throw error(
-		code_httpCode,
-		JSON.stringify({
-			error: true,
-			code: data_code,
-			data
-		})
-	);
+	throw error(code_httpCode, {
+		error: true,
+		code: data_code,
+		data
+	} as unknown as string);
 }
 
 const NONE = Symbol('no value');
