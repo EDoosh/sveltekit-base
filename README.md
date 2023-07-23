@@ -1,38 +1,33 @@
-# create-svelte
+# SvelteKit base
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+This is a base template for [SvelteKit](https://kit.svelte.dev) projects.
+It includes:
 
-## Creating a project
+- [Typescript](https://www.typescriptlang.org)
+- [TailwindCSS](https://tailwindcss.com)
+- Code formatting with [Prettier](https://prettier.io) and [ESLint](https://eslint.org) (+ [TS](https://typescript-eslint.io/))
+- Testing with [Vitest](https://vitest.dev/) for unit tests and [Playwright](https://playwright.dev/) for e2e tests
+- [Internationalization](./src/i18n/lib.ts)
+- A TanStack-inspired [query library](./src/state/query/lib.ts)
 
-If you're seeing this, you've probably already done this step. Congrats!
+# Usage
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Clone the repo and install the dependencies
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+git clone https://github.com/EDoosh/sveltekit-base.git my-new-app
+cd my-new-app
+yarn install
 ```
 
-## Building
+Edit the `package.json` file to change the name and description of your app.
+Then, replace this README with something a little more helpful!
 
-To create a production version of your app:
+If anything is confusing or doesn't work, please open an issue.
+Additionally, since a lot of this is code ported over from other projects, there may be some leftover code, in which case also please open an issue.
+Some of this code is a little unstable or untested.
 
-```bash
-npm run build
-```
+# Todo
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+- An example app with a few pages and components
+- Possibly add Prisma to the stack
