@@ -1,5 +1,6 @@
 {
 	"name": "sveltekit-base",
+	"description": "A SvelteKit template app",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
@@ -38,5 +39,7 @@
 		"zod": "^3.21.4"
 	},
 	"type": "module",
-	"dependencies": {}
+	"dependencies": {
+		"fast-deep-equal": "^3.1.3"
+	}
 }
