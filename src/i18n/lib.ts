@@ -65,7 +65,7 @@
  *  ```
  */
 
-import type { Readable } from 'svelte/store';
+import type { Readable } from "svelte/store";
 
 type Get<Keys extends I18nKeyFormat> = {
 	_get: (key: I18nKey<Keys>) => string;
@@ -74,7 +74,10 @@ type Get<Keys extends I18nKeyFormat> = {
 export function createI18n<
 	const Keys extends I18nKeyFormat,
 	const Langs extends Record<string, I18n<Keys>>
->(activeLanguage: Readable<keyof Langs>, languages: Langs): Readable<NestedFn<Keys> & Get<Keys>> {
+>(
+	activeLanguage: Readable<keyof Langs>,
+	languages: Langs
+): Readable<NestedFn<Keys> & Get<Keys>> {
 	return {
 		subscribe: (run, invalidate) =>
 			activeLanguage.subscribe((lang) => {
@@ -99,7 +102,9 @@ type I18nKeyFormatRecursive = {
 
 export type I18n<Keys extends I18nKeyFormat> = NestedStringyKeys<Keys>;
 type NestedStringyKeys<T extends Record<string, unknown>> = {
-	[K in keyof T]: T[K] extends Record<string, unknown> ? NestedStringyKeys<T[K]> : string;
+	[K in keyof T]: T[K] extends Record<string, unknown>
+		? NestedStringyKeys<T[K]>
+		: string;
 };
 export type NestedFn<T extends Record<string, unknown>> = {
 	[K in keyof T]: T[K] extends Record<string, unknown>
@@ -117,7 +122,10 @@ export type NestedFn<T extends Record<string, unknown>> = {
  *  in the `errors` group, it would be `["errors.UncaughtError", { "error": "myError" }]`.
  */
 export type I18nKey<Keys extends I18nKeyFormat> = DotNotationObject<Keys>;
-type DotNotationObject<T extends Record<string, unknown>, Prefix extends string = ''> = {
+type DotNotationObject<
+	T extends Record<string, unknown>,
+	Prefix extends string = ""
+> = {
 	[K in keyof T]-?: K extends string
 		? T[K] extends Record<string, unknown>
 			? DotNotationObject<T[K], `${Prefix}${K}.`>
@@ -144,7 +152,7 @@ export function proxyGen<Keys extends I18nKeyFormat>(
 		get: (target, prop): RecursiveRecordFn => {
 			// I apologize for the eslint rules here, but it's safe.
 			// This is the key problem with using proxies.
-			if (path.length === 0 && prop === '_get') {
+			if (path.length === 0 && prop === "_get") {
 				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 				return ((key: I18nKey<Keys>) => {
 					let k = key as string;
@@ -154,7 +162,7 @@ export function proxyGen<Keys extends I18nKeyFormat>(
 
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					let currentProxy: Record<string, any> = proxy;
-					for (const p of k.split('.')) {
+					for (const p of k.split(".")) {
 						// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 						currentProxy = currentProxy[p];
 					}
@@ -166,7 +174,10 @@ export function proxyGen<Keys extends I18nKeyFormat>(
 
 			const currentPath = [...path, String(prop)];
 			const notFound = () =>
-				(lang.TranslationNotFound as string).replace(/\{key\}/g, currentPath.join('.') + '#');
+				(lang.TranslationNotFound as string).replace(
+					/\{key\}/g,
+					currentPath.join(".") + "#"
+				);
 			if (!(prop in target)) {
 				return proxyNotFound(lang, currentPath);
 			}
@@ -174,7 +185,7 @@ export function proxyGen<Keys extends I18nKeyFormat>(
 			// We just asserted it exists.
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			const val = target[prop as string]!;
-			if (typeof val === 'object') {
+			if (typeof val === "object") {
 				return Object.assign(
 					proxyGen(lang, currentPath, val),
 					{
@@ -196,14 +207,16 @@ function proxyNotFound<Keys extends I18nKeyFormat>(
 ): (args?: Record<string, unknown>) => string {
 	const notFound = (lang.TranslationNotFound as string).replace(
 		/\{key\}/g,
-		foundPath.join('.') + '?' + (extraPath.length > 0 ? '.' + extraPath.join('.') : '')
+		foundPath.join(".") +
+			"?" +
+			(extraPath.length > 0 ? "." + extraPath.join(".") : "")
 	);
 
 	return new Proxy(
 		Object.assign(() => notFound, {}),
 		{
 			get: (_target, prop) => {
-				if (prop === Symbol.toPrimitive || prop === 'toString') {
+				if (prop === Symbol.toPrimitive || prop === "toString") {
 					return () => notFound;
 				}
 				return proxyNotFound(lang, foundPath, [...extraPath, String(prop)]);
@@ -220,7 +233,9 @@ function proxyFound<Keys extends I18nKeyFormat>(
 ): (args?: Record<string, unknown>) => string {
 	const notFound = (lang.TranslationNotFound as string).replace(
 		/\{key\}/g,
-		foundPath.join('.') + '!' + (extraPath.length > 0 ? '.' + extraPath.join('.') : '')
+		foundPath.join(".") +
+			"!" +
+			(extraPath.length > 0 ? "." + extraPath.join(".") : "")
 	);
 
 	const str = extraPath.length === 0 ? val : notFound;
@@ -228,14 +243,14 @@ function proxyFound<Keys extends I18nKeyFormat>(
 		if (extraPath.length !== 0) return notFound;
 
 		for (const [key, value] of Object.entries(args)) {
-			val = val.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value));
+			val = val.replace(new RegExp(`\\{${key}\\}`, "g"), String(value));
 		}
 		return val;
 	};
 
 	return new Proxy(Object.assign(fn, {}), {
 		get: (_target, prop) => {
-			if (prop === Symbol.toPrimitive || prop === 'toString') {
+			if (prop === Symbol.toPrimitive || prop === "toString") {
 				return () => str;
 			}
 			return proxyFound(lang, foundPath, val, [...extraPath, String(prop)]);

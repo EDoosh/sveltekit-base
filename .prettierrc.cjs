@@ -1,14 +1,13 @@
 module.exports = {
 	useTabs: true,
-	singleQuote: true,
-	trailingComma: 'none',
-	printWidth: 100,
+	singleQuote: false,
+	trailingComma: "none",
+	printWidth: 80,
 	plugins: [
-		require('prettier-plugin-svelte'),
+		"prettier-plugin-svelte",
 		// require('prettier-plugin-organize-imports'),
-		require('prettier-plugin-tailwindcss')
+		"prettier-plugin-tailwindcss"
 	],
-	pluginSearchDirs: false,
-	htmlWhitespaceSensitivity: 'ignore'
+	htmlWhitespaceSensitivity: "ignore"
 	// "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
 };

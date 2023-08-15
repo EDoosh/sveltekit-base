@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error } from "@sveltejs/kit";
 
 export type ApiResponse<T, E extends [string, unknown][] = [[string, never]]> =
 	| ApiSuccess<T>
@@ -127,8 +127,13 @@ export function err(httpCode: Error, code: string): never;
  *  An error code should be a short, PascalCase string that describes the error.
  */
 export function err(httpCode: Error, code: string, data: unknown): never;
-export function err(code_httpCode: string | Error, data_code?: unknown | string, data?: unknown) {
-	if (typeof code_httpCode === 'string') return err(HttpCode.BadRequest, code_httpCode, data_code);
+export function err(
+	code_httpCode: string | Error,
+	data_code?: unknown | string,
+	data?: unknown
+) {
+	if (typeof code_httpCode === "string")
+		return err(HttpCode.BadRequest, code_httpCode, data_code);
 
 	throw error(code_httpCode, {
 		error: true,
@@ -137,21 +142,27 @@ export function err(code_httpCode: string | Error, data_code?: unknown | string,
 	} as unknown as string);
 }
 
-const NONE = Symbol('no value');
+const NONE = Symbol("no value");
 /** Return a basic 200 OK success from an endpoint. */
 export function ok(): Response;
 /** Return a 200 OK success from an endpoint with some data attached. */
 export function ok<T>(data: T extends undefined ? never : T): Response;
 /** Return a JSON success with an HTTP status code and some data attached. */
-export function ok(httpCode: (typeof HttpCode)[keyof typeof HttpCode], data: unknown): Response;
 export function ok(
-	data_httpCode: unknown | (typeof HttpCode)[keyof typeof HttpCode] = HttpCode.OK,
+	httpCode: (typeof HttpCode)[keyof typeof HttpCode],
+	data: unknown
+): Response;
+export function ok(
+	data_httpCode:
+		| unknown
+		| (typeof HttpCode)[keyof typeof HttpCode] = HttpCode.OK,
 	data: unknown = NONE
 ) {
 	// neither data nor httpcode provided.
 	if (data_httpCode === undefined) return ok(HttpCode.OK, undefined);
 	// data provided, but no httpcode.
-	if (data === NONE || typeof data_httpCode !== 'number') return ok(HttpCode.OK, data_httpCode);
+	if (data === NONE || typeof data_httpCode !== "number")
+		return ok(HttpCode.OK, data_httpCode);
 
 	// data and httpcode provided
 	return new Response(
@@ -162,7 +173,7 @@ export function ok(
 		{
 			status: data_httpCode,
 			headers: {
-				'Content-Type': 'application/json'
+				"Content-Type": "application/json"
 			}
 		}
 	);

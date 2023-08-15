@@ -1,19 +1,19 @@
 module.exports = {
 	root: true,
 	extends: [
-		'eslint:recommended',
-		'plugin:@typescript-eslint/recommended',
-		'plugin:@typescript-eslint/recommended-requiring-type-checking',
-		'plugin:svelte/recommended',
-		'prettier'
+		"eslint:recommended",
+		"plugin:@typescript-eslint/recommended",
+		"plugin:@typescript-eslint/recommended-requiring-type-checking",
+		"plugin:svelte/recommended",
+		"plugin:prettier/recommended"
 	],
-	parser: '@typescript-eslint/parser',
-	plugins: ['@typescript-eslint'],
+	parser: "@typescript-eslint/parser",
+	plugins: ["@typescript-eslint"],
 	parserOptions: {
-		sourceType: 'module',
+		sourceType: "module",
 		ecmaVersion: 2020,
-		extraFileExtensions: ['.svelte'],
-		project: './tsconfig.eslint.json'
+		extraFileExtensions: [".svelte"],
+		project: "./tsconfig.eslint.json"
 	},
 	env: {
 		browser: true,
@@ -22,33 +22,33 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ['*.svelte'],
-			parser: 'svelte-eslint-parser',
+			files: ["*.svelte"],
+			parser: "svelte-eslint-parser",
 			parserOptions: {
-				parser: '@typescript-eslint/parser'
+				parser: "@typescript-eslint/parser"
 			}
 		}
 	],
 	rules: {
 		quotes: [
-			'error',
-			'single',
+			"error",
+			"double",
 			{
 				avoidEscape: true
 			}
 		],
-		indent: 'off',
-		'comma-dangle': ['error', 'never'],
-		'linebreak-style': ['error', 'unix'],
-		semi: ['error', 'always'],
-		'no-unused-vars': 'off',
-		'@typescript-eslint/no-unused-vars': [
-			'error',
-			{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+		indent: "off",
+		"comma-dangle": ["error", "never"],
+		"linebreak-style": ["error", "unix"],
+		semi: ["error", "always"],
+		"no-unused-vars": "off",
+		"@typescript-eslint/no-unused-vars": [
+			"error",
+			{ argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
 		],
 		// enforce boolean conditions
-		'@typescript-eslint/strict-boolean-expressions': [
-			'error',
+		"@typescript-eslint/strict-boolean-expressions": [
+			"error",
 			{
 				allowString: false,
 				allowNumber: false,
@@ -60,9 +60,9 @@ module.exports = {
 				allowAny: false
 			}
 		],
-		'@typescript-eslint/member-delimiter-style': 'warn',
-		'@typescript-eslint/no-inferrable-types': [
-			'warn',
+		"@typescript-eslint/member-delimiter-style": "warn",
+		"@typescript-eslint/no-inferrable-types": [
+			"warn",
 			{
 				ignoreParameters: true,
 				ignoreProperties: true

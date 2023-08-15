@@ -1,7 +1,7 @@
-import { writable } from 'svelte/store';
-import { en } from '$/i18n/lang/en';
-import { browser } from '$app/environment';
-import * as lib from './lib';
+import { writable } from "svelte/store";
+import { en } from "$/i18n/lang/en";
+import { browser } from "$app/environment";
+import * as lib from "./lib";
 
 /** The translation keys for the app.
  *
@@ -34,11 +34,11 @@ const LANGUAGES = {
 	en
 } as const;
 export type Language = keyof typeof LANGUAGES;
-export const language = writable<Language>('en');
+export const language = writable<Language>("en");
 
 if (browser) {
-	window.addEventListener('keydown', (event) => {
-		if (event.altKey && event.key === 'l') {
+	window.addEventListener("keydown", (event) => {
+		if (event.altKey && event.key === "l") {
 			language.update((val) => {
 				const keys = Object.keys(LANGUAGES) as Language[];
 				const idx = keys.indexOf(val);
@@ -49,4 +49,7 @@ if (browser) {
 	});
 }
 
-export const i18n = lib.createI18n<I18nKeys, typeof LANGUAGES>(language, LANGUAGES);
+export const i18n = lib.createI18n<I18nKeys, typeof LANGUAGES>(
+	language,
+	LANGUAGES
+);

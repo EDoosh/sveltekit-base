@@ -1,10 +1,10 @@
-import type { RequestHandler } from './$types';
-import { ok, err, type ErrorMap } from '..';
-import z from 'zod';
+import type { RequestHandler } from "./$types";
+import { ok, err, type ErrorMap } from "..";
+import z from "zod";
 
 export type Errors = ErrorMap<{
-	'JSON:ParseError': never;
-	'JSON:ValidationError': z.ZodError<{
+	"JSON:ParseError": never;
+	"JSON:ValidationError": z.ZodError<{
 		text: string;
 	}>;
 }>;
@@ -17,22 +17,22 @@ export const POST = (async ({ request }) => {
 	try {
 		json = await request.json();
 	} catch (e) {
-		err('JSON:ParseError');
+		err("JSON:ParseError");
 	}
 
 	const parseResult = POST_BODY.safeParse(json);
 	if (!parseResult.success) {
-		err('JSON:ValidationError', parseResult.error);
+		err("JSON:ValidationError", parseResult.error);
 	}
 
 	let text = parseResult.data.text;
 	// Turn the text into leet speak
 	text = text
-		.replace(/a/gi, '4')
-		.replace(/e/gi, '3')
-		.replace(/o/gi, '0')
-		.replace(/s/gi, '5')
-		.replace(/t/gi, '7');
+		.replace(/a/gi, "4")
+		.replace(/e/gi, "3")
+		.replace(/o/gi, "0")
+		.replace(/s/gi, "5")
+		.replace(/t/gi, "7");
 
 	return ok(text);
 }) satisfies RequestHandler;

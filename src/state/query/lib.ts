@@ -106,9 +106,9 @@ import {
 	type Writable,
 	readable,
 	derived
-} from 'svelte/store';
-import deepEqual from 'fast-deep-equal';
-import { browser } from '$app/environment';
+} from "svelte/store";
+import deepEqual from "fast-deep-equal";
+import { browser } from "$app/environment";
 
 export type QueryError = [string, unknown] | [string] | [string, QueryError];
 
@@ -121,9 +121,6 @@ export type QueriesType = Record<
 		err: QueryError;
 	}
 >;
-// type _IfThisFailsThenQueriesIsWrong<
-// 	_T extends QueriesType = Queries
-// > = unknown;
 
 /** All the query keys to their sub-keys. */
 export type QuerySubkeys<Q extends QueriesType> = {
@@ -140,47 +137,51 @@ export type QueryKeys<Q extends QueriesType> = {
 /** All the query keys with their sub-keys in an array. Basically how you'd use
  *  it in a `useQuery` call.
  */
-export type QueryKeyArr<Q extends QueriesType> = QueryKeys<Q>[keyof QuerySubkeys<Q>];
+export type QueryKeyArr<Q extends QueriesType> =
+	QueryKeys<Q>[keyof QuerySubkeys<Q>];
 
 export type QueryResult<Q extends QueriesType, Key extends keyof Q> =
 	| QueryResultIdle
 	| QueryResultLoading
 	| QueryResultErr<Q, Key>
 	| QueryResultOk<Q, Key>;
-type QueryResultIdle = {
+export type QueryResultIdle = {
 	/** The query is not fetching and does not intend to. This is
 	 *  usually because a dependency is not loaded in yet.
 	 *
 	 *  For maintainers, this is because `Query.stoppedBy.size > 0`.
 	 */
-	status: 'idle';
+	status: "idle";
 };
-type QueryResultLoading = {
-	status: 'loading';
+export type QueryResultLoading = {
+	status: "loading";
 };
-type QueryResultErr<Q extends QueriesType, Key extends keyof Q> = {
-	status: 'err';
+export type QueryResultErr<Q extends QueriesType, Key extends keyof Q> = {
+	status: "err";
 	/** The query is still in the `refetch` phase and this was a result
 	 *  of `FetchResult`'s `returnError` being `true`. If this is set,
 	 *  you can think of the status as being simultaneously `loading`
 	 *  and `err`.
 	 */
 	isRefetching: boolean;
-	err: Q[Key]['err'];
+	err: Q[Key]["err"];
 };
-type QueryResultOk<Q extends QueriesType, Key extends keyof Q> = {
-	status: 'ok';
-	data: Q[Key]['ok'];
+export type QueryResultOk<Q extends QueriesType, Key extends keyof Q> = {
+	status: "ok";
+	data: Q[Key]["ok"];
 };
 
-type WQueryMap<Q extends QueriesType> = Writable<QueryMap<Q>>;
-type QueryMap<
+export type WQueryMap<Q extends QueriesType> = Writable<QueryMap<Q>>;
+export type QueryMap<
 	Q extends QueriesType,
 	T extends QueriesType = Q,
 	K extends keyof Q | never = never
 > = {
 	[Key in keyof T]?: T[Key] extends {
-		subkeys: [infer NewKey extends string | number, ...infer Keys extends (string | number)[]];
+		subkeys: [
+			infer NewKey extends string | number,
+			...infer Keys extends (string | number)[]
+		];
 		ok: infer Success;
 		err: infer Error extends QueryError;
 	}
@@ -199,10 +200,15 @@ type QueryMap<
 				ok: infer _Success;
 				err: infer _Error extends QueryError;
 		  }
-		? Writable<QueryMapItem<Q, K extends never ? (Key extends keyof Q ? Key : never) : K>>
+		? Writable<
+				QueryMapItem<
+					Q,
+					K extends never ? (Key extends keyof Q ? Key : never) : K
+				>
+		  >
 		: never;
 };
-type QueryMapItem<Q extends QueriesType, Key extends keyof Q> = {
+export type QueryMapItem<Q extends QueriesType, Key extends keyof Q> = {
 	/** The latest query result. */
 	current: Readable<QueryResult<Q, Key>>;
 	/** If a query is stale, it means it is outdated and should be re-fetched.
@@ -223,7 +229,10 @@ type QueryMapItem<Q extends QueriesType, Key extends keyof Q> = {
 		 *  Set to `false` if `isStale` is `true`.
 		 */
 		duration: number | false;
-		/** Whether the query is currently stale. */
+		/** Whether the query is currently stale.
+		 *
+		 *  Note: This is `false` if currently fetching.
+		 */
 		isStale: boolean;
 		/** The timeout to mark as stale. */
 		timeout: NodeJS.Timeout | undefined;
@@ -259,18 +268,18 @@ type QueryMapItem<Q extends QueriesType, Key extends keyof Q> = {
 		 *  when the "cache is cleared". When we clear the cache we just set
 		 *  `hasCached` to `false` and expect things to react to that.
 		 */
-		data: ['none'] | ['some', Q[Key]['ok']];
+		data: ["none"] | ["some", Q[Key]["ok"]];
 	};
 	/** The Query instance. */
 	class: Query<Q, Key>;
 };
 
-type FetchResult<Q extends QueriesType, Key extends keyof Q> =
-	| FetchResultRetry<Q[Key]['err']>
-	| FetchResultErr<Q[Key]['err']>
-	| FetchResultOk<Q[Key]['ok']>;
-type FetchResultRetry<Err> = [
-	'retry',
+export type FetchResult<Q extends QueriesType, Key extends keyof Q> =
+	| FetchResultRetry<Q[Key]["err"]>
+	| FetchResultErr<Q[Key]["err"]>
+	| FetchResultOk<Q[Key]["ok"]>;
+export type FetchResultRetry<Err> = [
+	"retry",
 	{
 		err: Err;
 		/** In the event you want to retry the call, but also want to show an
@@ -284,17 +293,17 @@ type FetchResultRetry<Err> = [
 		returnError: boolean;
 	}
 ];
-type FetchResultErr<Err> = ['err', Err];
-type FetchResultOk<Ok> = ['ok', Ok];
+export type FetchResultErr<Err> = ["err", Err];
+export type FetchResultOk<Ok> = ["ok", Ok];
 
 export type RetryOrError<Err> = FetchResultRetry<Err> | FetchResultErr<Err>;
 
-const QUERY_INIT = Symbol('QUERY_INIT');
+export const QUERY_INIT = Symbol("QUERY_INIT");
 
-type QueryDependency<Q extends QueriesType> =
-	| QueryDepdendencyQuery<Q, keyof Q>
-	| QueryDependencySubscription<unknown>;
-type QueryDepdendencyQuery<Q extends QueriesType, Key extends keyof Q> = {
+export type QueryDependency<Q extends QueriesType> =
+	| QDepQuery<Q, keyof Q>
+	| QDepSubscription<any>;
+export class QDepQuery<Q extends QueriesType, Key extends keyof Q> {
 	/** The query key to depend on.
 	 *
 	 *  An important thing to note is that, if the dependency does not exist yet,
@@ -307,7 +316,7 @@ type QueryDepdendencyQuery<Q extends QueriesType, Key extends keyof Q> = {
 	 *  - `becomeStale`: This query becomes stale as well.
 	 *  - `staleAndClear`: This query becomes stale and the cache is cleared.
 	 */
-	onStale?: () => 'nothing' | 'becomeStale' | 'staleAndClear';
+	onStale: () => "nothing" | "becomeStale" | "staleAndClear" = () => "nothing";
 	/** When the dependency query changes, this function is called to check if
 	 *  this query is still valid, or should re-run.
 	 *
@@ -324,9 +333,27 @@ type QueryDepdendencyQuery<Q extends QueriesType, Key extends keyof Q> = {
 	onChange: (
 		last: QueryResult<Q, Key> | typeof QUERY_INIT,
 		current: QueryResult<Q, Key>
-	) => 'nothing' | 'refetch' | 'clearCacheAndRefetch' | 'stop';
-};
-type QueryDependencySubscription<T> = {
+	) => "nothing" | "refetch" | "clearCacheAndRefetch" | "stop";
+
+	constructor(
+		key: QueryKeys<Q>[Key],
+		{
+			onStale,
+			onChange
+		}: {
+			onStale?: () => "nothing" | "becomeStale" | "staleAndClear";
+			onChange: (
+				last: QueryResult<Q, Key> | typeof QUERY_INIT,
+				current: QueryResult<Q, Key>
+			) => "nothing" | "refetch" | "clearCacheAndRefetch" | "stop";
+		}
+	) {
+		this.key = key;
+		this.onChange = onChange;
+		if (onStale !== undefined) this.onStale = onStale;
+	}
+}
+export class QDepSubscription<T> {
 	/** The subscription to rely on. */
 	subscription: Readable<T>;
 	/** When the subscription changes, this function is called to check if
@@ -346,10 +373,25 @@ type QueryDependencySubscription<T> = {
 	onChange: (
 		last: T | typeof QUERY_INIT,
 		current: T
-	) => 'nothing' | 'refetch' | 'clearCacheAndRefetch' | 'stop';
-};
+	) => "nothing" | "refetch" | "clearCacheAndRefetch" | "stop";
 
-type UseQueryOptions<Q extends QueriesType, Key extends keyof Q> = {
+	constructor(
+		subscription: Readable<T>,
+		{
+			onChange
+		}: {
+			onChange: (
+				last: T | typeof QUERY_INIT,
+				current: T
+			) => "nothing" | "refetch" | "clearCacheAndRefetch" | "stop";
+		}
+	) {
+		this.subscription = subscription;
+		this.onChange = onChange;
+	}
+}
+
+export type UseQueryOptions<Q extends QueriesType, Key extends keyof Q> = {
 	/** The query keys that this query depends on.
 	 *
 	 *  If a dependency is not yet loaded in, the fetch will not be called.
@@ -365,7 +407,7 @@ type UseQueryOptions<Q extends QueriesType, Key extends keyof Q> = {
 	 *  Return `false` to stop retrying and return the error. Return a number to
 	 *  wait that many milliseconds before retrying.
 	 */
-	onRetry: (count: number, err: Q[Key]['err']) => false | number;
+	onRetry: (count: number, err: Q[Key]["err"]) => false | number;
 
 	/** A stale query is one that should be fetched as soon as possible. */
 	stale: {
@@ -406,14 +448,16 @@ type UseQueryOptions<Q extends QueriesType, Key extends keyof Q> = {
 		 *  number of milliseconds to wait before clearing the cache.
 		 *  If this is `false`, the cache is never cleared.
 		 */
-		duration: (last: Q[Key]['ok']) => number | false;
+		duration: (last: Q[Key]["ok"]) => number | false;
 	};
 };
 
-type RecursivePartial<T> = {
-	[K in keyof T]?: T[K] extends Record<string, unknown> ? RecursivePartial<T[K]> : T[K];
+export type RecursivePartial<T> = {
+	[K in keyof T]?: T[K] extends Record<string, unknown>
+		? RecursivePartial<T[K]>
+		: T[K];
 };
-type RecursiveExcludeUndefined<T extends object> = {
+export type RecursiveExcludeUndefined<T extends object> = {
 	[K in keyof T]: T[K] extends object
 		? RecursiveExcludeUndefined<T[K]>
 		: T[K] extends undefined
@@ -426,7 +470,7 @@ function recursiveRemoveUndefined<T extends object>(
 	for (const key in obj) {
 		if (obj[key] === undefined) {
 			delete obj[key];
-		} else if (typeof obj[key] === 'object') {
+		} else if (typeof obj[key] === "object") {
 			// @ts-ignore
 			obj[key] = recursiveRemoveUndefined(obj[key]);
 		}
@@ -450,7 +494,9 @@ export type CreateQueryMapResponse<Q extends QueriesType> = {
 	): Readable<QueryResult<Q, Key>>;
 
 	/** Returns a query by its key if it's already been created. */
-	getQuery<Key extends keyof Q>(key: QueryKeys<Q>[Key]): Writable<QueryMapItem<Q, Key>> | undefined;
+	getQuery<Key extends keyof Q>(
+		key: QueryKeys<Q>[Key]
+	): Writable<QueryMapItem<Q, Key>> | undefined;
 
 	/** Mark the query stale and clear the cache. Immediately refetches the data,
 	 *  even if not in use.
@@ -505,10 +551,15 @@ export type CreateQueryMapResponse<Q extends QueriesType> = {
 	 *  refetch(['userInfo']);
 	 *  ```
 	 */
-	updateData<Key extends keyof Q>(key: QueryKeys<Q>[Key], data: Q[Key]['ok']): void;
+	updateData<Key extends keyof Q>(
+		key: QueryKeys<Q>[Key],
+		data: Q[Key]["ok"]
+	): void;
 };
 
-export function createQueryMap<Q extends QueriesType>(): CreateQueryMapResponse<Q> {
+export function createQueryMap<
+	Q extends QueriesType
+>(): CreateQueryMapResponse<Q> {
 	const queryMap: WQueryMap<Q> = writable({});
 
 	return {
@@ -586,17 +637,17 @@ export function getQuery<Q extends QueriesType, Key extends keyof Q>(
 	}
 
 	// If the query is in the query map, return it
-	if (!('subscribe' in qmItem)) return undefined;
+	if (!("subscribe" in qmItem)) return undefined;
 
 	const item = qmItem as unknown as Writable<QueryMapItem<Q, Key>>;
-	if ('current' in get(item)) {
+	if ("current" in get(item)) {
 		return item;
 	}
 	// Query does not exist
 	return undefined;
 }
 
-class Query<Q extends QueriesType, Key extends keyof Q> {
+export class Query<Q extends QueriesType, Key extends keyof Q> {
 	key: QueryKeys<Q>[Key];
 	/** A request to fetch the data from the server. */
 	fetch: () => Promise<FetchResult<Q, Key>>;
@@ -645,7 +696,7 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 		fetch: () => Promise<FetchResult<Q, Key>>,
 		options: RecursivePartial<UseQueryOptions<Q, Key>> = {}
 	) {
-		trace(key, 'Creating query');
+		trace(key, "Creating query");
 		this.queryMap = queryMap;
 		this.key = key;
 		this.fetch = fetch;
@@ -668,65 +719,77 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 				duration: false,
 				timeout: undefined,
 				hasCached: false,
-				data: ['none']
+				data: ["none"]
 			},
 			class: this
 		});
 
-		this.current = writable<QueryResult<Q, Key>>({ status: 'idle' });
+		this.current = writable<QueryResult<Q, Key>>({ status: "idle" });
 
 		const currentWithCaching_: Readable<QueryResult<Q, Key>> = derived(
 			[this.current, this.query],
 			([current, query]) => {
+				this.trace("current with caching", current, query);
 				// idle => idle
 				// !stale && cached && (ok || err) => current
 				// !stale && cached && loading => cached
 				// stale && cached => cached
 				// stale && !cached => loading
-				// !stale & !cached => ??? => loading
-				if (current.status === 'idle') {
+				// !stale && !cached (i.e., init or error) => current
+				if (current.status === "idle") {
+					this.trace("current with caching -> idle");
 					return current;
 				}
 
 				if (!query.stale.isStale) {
-					if (current.status === 'loading' && query.cache.data[0] === 'some') {
+					if (current.status === "loading" && query.cache.data[0] === "some") {
+						this.trace(
+							"current with caching -> !stale && loading && cache exists"
+						);
 						return {
-							status: 'ok',
+							status: "ok",
 							data: query.cache.data[1]
 						} satisfies QueryResult<Q, Key>;
 					}
 
+					this.trace(
+						"current with caching -> !stale && (!loading || !cache)",
+						current,
+						query
+					);
 					return current;
 				}
 
-				if (query.cache.hasCached && query.cache.data[0] === 'some') {
+				if (query.cache.hasCached && query.cache.data[0] === "some") {
+					this.trace("current with caching -> has cache");
 					return {
-						status: 'ok',
+						status: "ok",
 						data: query.cache.data[1]
 					} satisfies QueryResult<Q, Key>;
 				}
 
+				this.trace("current with caching -> loading");
 				return {
-					status: 'loading'
+					status: "loading"
 				} satisfies QueryResult<Q, Key>;
 			},
-			{ status: 'loading' }
+			{ status: "loading" }
 		);
 
 		let subscribers = 0;
 		const currentWithCaching: Readable<QueryResult<Q, Key>> = {
 			subscribe: (run, invalidate) => {
 				subscribers++;
-				this.trace('New subscriber');
+				this.trace("New subscriber");
 				if (subscribers === 1) {
-					this.trace('First subscriber');
+					this.trace("First subscriber");
 					this.dataInUse.set(true);
 
 					if (this.options.stale.onSubscribeIfUnused) {
-						this.trace('First subscriber, stale on subscribe');
+						this.trace("First subscriber, stale on subscribe");
 						this.markStale();
 					} else if (get(this.query).stale.isStale) {
-						this.trace('First subscriber, currently stale');
+						this.trace("First subscriber, currently stale");
 						this.refetch();
 					}
 				}
@@ -735,9 +798,9 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 				return () => {
 					unsubscribe();
 					subscribers--;
-					this.trace('Removed subscriber');
+					this.trace("Removed subscriber");
 					if (subscribers === 0) {
-						this.trace('Last subscriber');
+						this.trace("Last subscriber");
 						this.dataInUse.set(false);
 					}
 				};
@@ -759,40 +822,60 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 		}
 
 		if (!get(this.query).stale.isStale) {
-			this.trace('Fetcher called but not stale');
+			this.trace("Fetcher called but not stale");
 			return;
 		}
 
 		if (this.isFetching) {
-			this.trace('Fetcher called while already fetching');
+			this.trace("Fetcher called while already fetching");
 			return;
 		}
 
-		this.trace('Fetching');
+		this.query.update((q) => {
+			clearTimeout(q.stale.timeout);
+			q.stale = {
+				duration: false,
+				isStale: false,
+				turnsStaleAt: false,
+				timeout: undefined
+			};
+
+			clearTimeout(q.cache.timeout);
+			q.cache = {
+				...q.cache,
+				duration: false,
+				expiresAt: false,
+				timeout: undefined
+			};
+
+			return q;
+		});
+
+		this.trace("Fetching");
 		this.isFetching = true;
-		this.current.set({ status: 'loading' });
+		this.current.set({ status: "loading" });
 		let count = 0;
 		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			if (this.stoppedBy.size > 0) {
-				this.trace('Stopped by', this.stoppedBy);
-				this.current.set({ status: 'idle' });
+				this.trace("Stopped by", this.stoppedBy);
+				this.current.set({ status: "idle" });
 				this.isFetching = false;
 				return;
 			}
 
 			const result = await this.fetch();
-			this.trace('Fetch result:', result);
+			this.trace("Fetch result:", result);
 
-			if (result[0] === 'retry') {
+			if (result[0] === "retry") {
 				count++;
 
 				const { err, returnError } = result[1];
 				const waitDuration = this.options.onRetry(count, err);
 
 				if (waitDuration === false) {
-					this.trace('Retry wait duration false, returning error');
-					this.current.set({ status: 'err', isRefetching: false, err });
+					this.trace("Retry wait duration false, returning error");
+					this.current.set({ status: "err", isRefetching: false, err });
 					break;
 				}
 
@@ -806,40 +889,48 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 					// `current` field on the query is gonna be the old cached
 					// data. We've just gone back in time!
 					// Clear the cache so this doesn't happen.
-					this.trace('Retry returning error');
-					this.clearCache();
-					this.current.set({ status: 'err', isRefetching: true, err });
+					this.trace("Retry returning error. Clear cache");
+					this.clearCache(false, false);
+					this.current.set({ status: "err", isRefetching: true, err });
 				} else {
-					this.trace('Retry requested a loading');
-					this.current.set({ status: 'loading' });
+					this.trace("Retry requested a loading");
+					this.current.set({ status: "loading" });
 				}
-				this.trace('Retry waiting for', waitDuration, 'ms');
+				this.trace("Retry waiting for", waitDuration, "ms");
 				await new Promise((res) => setTimeout(res, waitDuration));
-				this.trace('Retrying...');
-			} else if (result[0] === 'err') {
-				this.current.set({ status: 'err', isRefetching: false, err: result[1] });
+				this.trace("Retrying...");
+			} else if (result[0] === "err") {
+				this.current.set({
+					status: "err",
+					isRefetching: false,
+					err: result[1]
+				});
 				break;
 			} else {
-				this.current.set({ status: 'ok', data: result[1] });
+				this.current.set({ status: "ok", data: result[1] });
 				break;
 			}
 		}
 
 		const current = get(this.current);
-		if (current.status === 'idle' || current.status === 'loading') {
-			this.trace('`this.current` in fetcher is idle or loading');
-			throw new Error("`this.current` after `Query.fetcher` shouldn't be idle or loading");
+		if (current.status === "idle" || current.status === "loading") {
+			this.trace("`this.current` in fetcher is idle or loading");
+			throw new Error(
+				"`this.current` after `Query.fetcher` shouldn't be idle or loading"
+			);
 		}
 
 		// Update the cache if we have a successful response
-		if (current.status === 'ok') {
+		if (current.status === "ok") {
+			this.trace("fetch data. set data");
 			this.setData(current.data);
 		} else {
 			// Clear the cache if we have an error
-			this.clearCache();
+			this.trace("fetch error. clear cache");
+			this.clearCache(false, false);
 		}
 		this.isFetching = false;
-		this.trace('Fetcher finished');
+		this.trace("Fetcher finished");
 	}
 
 	/** Mark the query stale and clear the cache. Will refetch according to the
@@ -848,38 +939,39 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 	 *
 	 *  See `[invalidate]` or `[invalidateAndRefetch]` for more info.
 	 */
-	clearCache(forceRefetch: boolean = false) {
-		this.trace('Clearing cache, forceRefetch:', forceRefetch);
+	clearCache(forceRefetch: boolean = false, markStale: boolean = false) {
+		this.trace("Clearing cache, forceRefetch:", forceRefetch);
 		this.query.update((clearCacheQuery) => {
 			clearTimeout(clearCacheQuery.cache.timeout);
 			clearCacheQuery.cache.timeout = undefined;
 			clearCacheQuery.cache.hasCached = false;
 			clearCacheQuery.cache.duration = false;
 			clearCacheQuery.cache.expiresAt = false;
+			clearCacheQuery.cache.data = ["none"];
 
 			return clearCacheQuery;
 		});
 
-		this.markStale(forceRefetch);
+		if (markStale) this.markStale(forceRefetch);
 	}
 
 	/** Update the `data` and `cache` of a query with your own data.
 	 *
 	 *  See `[updateData]` for more info.
 	 */
-	setData(data: Q[Key]['ok']) {
-		this.trace('setData called with', data);
-		this.current.set({ status: 'ok', data });
+	setData(data: Q[Key]["ok"]) {
+		this.trace("setData called with", data);
+		this.current.set({ status: "ok", data });
 
-		this.resetStaleTimer({ status: 'ok', data });
+		this.resetStaleTimer({ status: "ok", data });
 		this.query.update((updateCacheQuery) => {
-			updateCacheQuery.cache.data = ['some', data];
+			updateCacheQuery.cache.data = ["some", data];
 			updateCacheQuery.cache.hasCached = true;
 
 			clearTimeout(updateCacheQuery.cache.timeout);
 
 			const duration = this.options.cache.duration(data);
-			this.trace('setData duration of', duration);
+			this.trace("setData duration of", duration);
 			updateCacheQuery.cache.duration = duration;
 			if (duration === false) {
 				updateCacheQuery.cache.expiresAt = false;
@@ -896,13 +988,13 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 	}
 
 	resetStaleTimer(current: QueryResultErr<Q, Key> | QueryResultOk<Q, Key>) {
-		this.trace('Resetting stale timer with data', current);
+		this.trace("Resetting stale timer with data", current);
 		this.query.update((updateStaleQuery) => {
 			clearTimeout(updateStaleQuery.stale.timeout);
 
 			const duration = this.options.stale.duration(current);
 			updateStaleQuery.stale.duration = duration;
-			this.trace('Resetting stale timer with duration', duration);
+			this.trace("Resetting stale timer with duration", duration);
 			if (duration === false) {
 				updateStaleQuery.stale.turnsStaleAt = false;
 				updateStaleQuery.stale.timeout = undefined;
@@ -923,7 +1015,7 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 	 *  See `[markStale]` or `[refetch]` for more info.
 	 */
 	markStale(forceRefetch: boolean = false) {
-		this.trace('Marking stale, forceRefetch', forceRefetch);
+		this.trace("Marking stale, forceRefetch", forceRefetch);
 		this.query.update((markStaleQuery) => {
 			clearTimeout(markStaleQuery.stale.timeout);
 			markStaleQuery.stale.timeout = undefined;
@@ -936,7 +1028,11 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 
 		const dataInUse = get(this.dataInUse);
 		const refetchIfUnused = this.options.stale.refetchIfUnused;
-		this.trace('Is refetching after marking stale? ', { forceRefetch, dataInUse, refetchIfUnused });
+		this.trace("Is refetching after marking stale? ", {
+			forceRefetch,
+			dataInUse,
+			refetchIfUnused
+		});
 		if (forceRefetch || dataInUse || refetchIfUnused) {
 			void this.fetcher();
 		}
@@ -949,18 +1045,23 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 	 *  this query accordingly.
 	 */
 	private subscribeToDependencies() {
-		this.trace('Subscribing to dependencies');
-		this.dependencyUnsubscribers = this.options.dependencies.map((dependency, i) => {
-			if ('subscription' in dependency) {
-				return this.addDependencySubscription(dependency, i);
-			} else {
-				return this.addDependencyQuery(dependency, i);
+		this.trace("Subscribing to dependencies");
+		this.dependencyUnsubscribers = this.options.dependencies.map(
+			(dependency, i) => {
+				if (dependency instanceof QDepSubscription) {
+					return this.addDependencySubscription(dependency, i);
+				} else {
+					return this.addDependencyQuery(dependency, i);
+				}
 			}
-		});
+		);
 	}
 
-	private addDependencySubscription<T>(dependency: QueryDependencySubscription<T>, i: number) {
-		let last: Parameters<QueryDependencySubscription<T>['onChange']>[0] = QUERY_INIT;
+	private addDependencySubscription<T>(
+		dependency: QDepSubscription<T>,
+		i: number
+	): Readable<Unsubscriber> {
+		let last: Parameters<QDepSubscription<T>["onChange"]>[0] = QUERY_INIT;
 
 		return readable(
 			dependency.subscription.subscribe((current) => {
@@ -969,16 +1070,24 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 				}
 
 				const result = dependency.onChange(last, current);
-				this.trace('Dependency', i, 'onChange with', last, current, 'returned', result);
-				if (result === 'nothing') {
+				this.trace(
+					"Dependency",
+					i,
+					"onChange with",
+					last,
+					current,
+					"returned",
+					result
+				);
+				if (result === "nothing") {
 					this.stoppedBy.delete(i);
-				} else if (result === 'refetch') {
+				} else if (result === "refetch") {
 					this.stoppedBy.delete(i);
 					this.refetch();
-				} else if (result === 'clearCacheAndRefetch') {
+				} else if (result === "clearCacheAndRefetch") {
 					this.stoppedBy.delete(i);
 					this.invalidateAndRefetch();
-				} else if (result === 'stop') {
+				} else if (result === "stop") {
 					this.stoppedBy.add(i);
 					this.invalidateAndRefetch();
 				}
@@ -989,9 +1098,9 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 	}
 
 	private addDependencyQuery<K extends keyof Q>(
-		dependency: QueryDepdendencyQuery<Q, K>,
+		dependency: QDepQuery<Q, K>,
 		i: number
-	) {
+	): Readable<Unsubscriber> {
 		let last: QueryResult<Q, K> | typeof QUERY_INIT = QUERY_INIT;
 		let lastWasStale = false;
 
@@ -1015,9 +1124,9 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 
 					if (query.stale.isStale && !lastWasStale) {
 						const result = dependency.onStale?.();
-						if (result === 'becomeStale') {
+						if (result === "becomeStale") {
 							this.markStale();
-						} else if (result === 'staleAndClear') {
+						} else if (result === "staleAndClear") {
 							this.clearCache();
 						}
 					}
@@ -1030,15 +1139,15 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 
 					// @ts-ignore
 					const result = dependency.onChange(last, current);
-					if (result === 'nothing') {
+					if (result === "nothing") {
 						this.stoppedBy.delete(i);
-					} else if (result === 'refetch') {
+					} else if (result === "refetch") {
 						this.stoppedBy.delete(i);
 						this.refetch();
-					} else if (result === 'clearCacheAndRefetch') {
+					} else if (result === "clearCacheAndRefetch") {
 						this.stoppedBy.delete(i);
 						this.invalidateAndRefetch();
-					} else if (result === 'stop') {
+					} else if (result === "stop") {
 						this.stoppedBy.add(i);
 						this.invalidateAndRefetch();
 					}
@@ -1075,10 +1184,10 @@ class Query<Q extends QueriesType, Key extends keyof Q> {
 }
 
 /** See `[CreateQueryMapResponse.invalidateAndRefetch]` for documentation. */
-export function invalidateAndRefetch<Q extends QueriesType, Key extends keyof Q>(
-	queryMap: WQueryMap<Q>,
-	key: QueryKeys<Q>[Key]
-) {
+export function invalidateAndRefetch<
+	Q extends QueriesType,
+	Key extends keyof Q
+>(queryMap: WQueryMap<Q>, key: QueryKeys<Q>[Key]) {
 	const query = getQuery(queryMap, key);
 	if (query === undefined) return;
 	get(query).class.invalidateAndRefetch();
@@ -1118,7 +1227,7 @@ export function markStale<Q extends QueriesType, Key extends keyof Q>(
 export function updateData<Q extends QueriesType, Key extends keyof Q>(
 	queryMap: WQueryMap<Q>,
 	key: QueryKeys<Q>[Key],
-	data: Q[Key]['ok']
+	data: Q[Key]["ok"]
 ) {
 	const query = getQuery(queryMap, key);
 	if (query === undefined) return;
@@ -1130,11 +1239,10 @@ export function trace<Q extends QueriesType, Key extends keyof Q>(
 	keys: QueryKeys<Q>[Key],
 	...args: unknown[]
 ) {
-	console.log(`%c${keys.join('::')}%c `, 'color: #596064', 'color: white', ...args);
-}
-
-export type Invariant = ['Invariant', string];
-/** A little helper function to declare something cannot happen. */
-export function invariant(message: string): ['err', Invariant] {
-	return ['err', ['Invariant', message]];
+	// console.log(
+	// 	`%c${keys.join("::")}%c `,
+	// 	"color: #596064",
+	// 	"color: white",
+	// 	...args
+	// );
 }
